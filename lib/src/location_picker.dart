@@ -49,6 +49,10 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final String nominatimHost;
 
+  /// [nominatimUserAgent] : (String) nominatim User Agent to use (default = 'Flutter App')
+  ///
+  final String nominatimUserAgent;
+
   /// [nominatimAdditionalQueryParameters] : (Map<String,dynamic>) additional parameters to add to the nominatim query. Can also be used to override existing parameters (example: {'extratags': '1'}) (default = null)
   ///
   final Map<String, dynamic>? nominatimAdditionalQueryParameters;
@@ -264,6 +268,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.urlTemplate = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     this.mapLanguage = 'en',
     this.nominatimHost = 'nominatim.openstreetmap.org',
+    this.nominatimUserAgent = "Flutter App",
     this.nominatimZoomLevel,
     this.nominatimAdditionalQueryParameters,
     this.countryFilter,
@@ -467,7 +472,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     };
     queryParameters.addAll(widget.nominatimAdditionalQueryParameters ?? {});
     var uri = Uri.https(widget.nominatimHost, '/reverse', queryParameters);
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: {
+    'User-Agent': widget.nominatimUserAgent,},);
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
     String displayName = "This Location is not accessible";
     Map<String, dynamic> address;
@@ -655,7 +661,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                     try {
                       String url =
                           'https://${widget.nominatimHost}/search?q=$value&format=json&polygon_geojson=1&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryFilter != null ? '&countrycodes=${widget.countryFilter}' : ''}';
-                      var response = await client.get(Uri.parse(url));
+                      var response = await client.get(Uri.parse(url),headers: {'User-Agent': widget.nominatimUserAgent,},);
                       var decodedResponse =
                           jsonDecode(utf8.decode(response.bodyBytes))
                               as List<dynamic>;
